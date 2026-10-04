@@ -9,6 +9,7 @@ import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import com.example.models.UserWithPassword
 
 class UserRepository {
 
@@ -97,6 +98,25 @@ class UserRepository {
             UsersTable.deleteWhere {
                 UsersTable.id eq id
             } > 0
+        }
+    }
+
+    fun findByEmail(email: String): UserWithPassword? {
+
+        return transaction {
+
+            UsersTable
+                .selectAll()
+                .where { UsersTable.email eq email }
+                .map { row ->
+                    UserWithPassword(
+                        id = row[UsersTable.id].value,
+                        name = row[UsersTable.name],
+                        email = row[UsersTable.email],
+                        password = row[UsersTable.password]
+                    )
+                }
+                .singleOrNull()
         }
     }
 }

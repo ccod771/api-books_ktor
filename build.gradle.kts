@@ -18,6 +18,9 @@ dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.postgresql)
+    implementation(libs.bcrypt)
+    implementation(ktorLibs.server.auth.jwt)
+
     implementation(ktorLibs.client.apache)
     implementation(ktorLibs.client.core)
     implementation(ktorLibs.serialization.kotlinx.json)
@@ -27,6 +30,7 @@ dependencies {
     implementation(ktorLibs.server.contentNegotiation)
     implementation(ktorLibs.server.core)
     implementation(ktorLibs.server.netty)
+
     implementation(libs.logback.classic)
 
     testImplementation(kotlin("test"))

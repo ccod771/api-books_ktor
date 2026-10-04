@@ -1,5 +1,6 @@
 package com.example.plugins
 
+import com.example.database.BooksTable
 import com.example.database.DatabaseFactory
 import com.example.database.UsersTable
 import io.ktor.server.application.*
@@ -11,6 +12,9 @@ fun Application.configureDatabase() {
     DatabaseFactory.init()
 
     transaction {
-        SchemaUtils.create(UsersTable)
+        SchemaUtils.create(
+            UsersTable,
+            BooksTable
+        )
     }
 }

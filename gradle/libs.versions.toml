@@ -3,6 +3,7 @@ kotlin = "2.4.0"
 logback = "1.5.37"
 exposed = "1.0.0"
 postgresql = "42.7.8"
+bcrypt = "0.10.2"
 
 [libraries]
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
@@ -10,6 +11,7 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
