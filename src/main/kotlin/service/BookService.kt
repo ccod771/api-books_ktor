@@ -12,6 +12,7 @@ class BookService(
         request: BookCreateRequest,
         userId: Int
     ): Book {
+
         return repository.create(
             request = request,
             userId = userId
@@ -19,10 +20,36 @@ class BookService(
     }
 
     fun findAll(): List<Book> {
+
         return repository.findAll()
     }
 
     fun findById(id: Int): Book? {
+
         return repository.findById(id)
+    }
+
+    fun update(
+        id: Int,
+        userId: Int,
+        request: BookCreateRequest
+    ): Book? {
+
+        return repository.updateByOwner(
+            id = id,
+            userId = userId,
+            request = request
+        )
+    }
+
+    fun delete(
+        id: Int,
+        userId: Int
+    ): Boolean {
+
+        return repository.deleteByOwner(
+            id = id,
+            userId = userId
+        )
     }
 }

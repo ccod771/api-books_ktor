@@ -31,6 +31,7 @@ fun Application.configureRouting() {
             call.respondText("API Books")
         }
 
+        // LOGIN
         post("/login") {
 
             val request = call.receive<UserLoginRequest>()
@@ -52,23 +53,52 @@ fun Application.configureRouting() {
             }
         }
 
-
+        // PUBLIC BOOK ROUTES
         route("/books") {
 
+            // GET ALL BOOKS
             get {
 
                 val books = bookService.findAll()
 
                 call.respond(books)
             }
+
+            // GET BOOK BY ID
+            get("/{id}") {
+
+                val id = call.parameters["id"]?.toIntOrNull()
+
+                if (id == null) {
+
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "ID inválido"
+                    )
+
+                    return@get
+                }
+
+                val book = bookService.findById(id)
+
+                if (book == null) {
+
+                    call.respond(
+                        HttpStatusCode.NotFound,
+                        "Livro não encontrado"
+                    )
+
+                    return@get
+                }
+
+                call.respond(book)
+            }
         }
 
-
-
+        // PROTECTED ROUTES
         authenticate("auth-jwt") {
 
-
-
+            // PRIVATE TEST ROUTE
             get("/private") {
 
                 val principal = call.principal<JWTPrincipal>()
@@ -92,10 +122,10 @@ fun Application.configureRouting() {
                 )
             }
 
-
-
+            // USER ROUTES
             route("/users") {
 
+                // GET ALL USERS
                 get {
 
                     val users = userService.findAll()
@@ -103,75 +133,95 @@ fun Application.configureRouting() {
                     call.respond(users)
                 }
 
+                // GET USER BY ID
                 get("/{id}") {
 
                     val id = call.parameters["id"]?.toIntOrNull()
 
                     if (id == null) {
+
                         call.respond(
                             HttpStatusCode.BadRequest,
                             "ID inválido"
                         )
+
                         return@get
                     }
 
                     val user = userService.findById(id)
 
                     if (user == null) {
+
                         call.respond(
                             HttpStatusCode.NotFound,
                             "Usuário não encontrado"
                         )
+
                         return@get
                     }
 
                     call.respond(user)
                 }
 
+                // UPDATE USER
                 put("/{id}") {
 
                     val id = call.parameters["id"]?.toIntOrNull()
 
                     if (id == null) {
+
                         call.respond(
                             HttpStatusCode.BadRequest,
                             "ID inválido"
                         )
+
                         return@put
                     }
 
                     val request = call.receive<UserCreateRequest>()
 
-                    val user = userService.update(id, request)
+                    val user = userService.update(
+                        id,
+                        request
+                    )
 
                     if (user == null) {
+
                         call.respond(
                             HttpStatusCode.NotFound,
                             "Usuário não encontrado"
                         )
+
                         return@put
                     }
 
                     call.respond(user)
                 }
 
+                // DELETE USER
                 delete("/{id}") {
 
                     val id = call.parameters["id"]?.toIntOrNull()
 
                     if (id == null) {
+
                         call.respond(
-                            HttpStatusCode.BadRequest
+                            HttpStatusCode.BadRequest,
+                            "ID inválido"
                         )
+
                         return@delete
                     }
 
                     val deleted = userService.delete(id)
 
                     if (!deleted) {
+
                         call.respond(
-                            HttpStatusCode.NotFound
+                            HttpStatusCode.NotFound,
+                            "Usuário não encontrado"
                         )
+
                         return@delete
                     }
 
@@ -179,10 +229,10 @@ fun Application.configureRouting() {
                 }
             }
 
-
-
+            // PROTECTED BOOK ROUTES
             route("/books") {
 
+                // CREATE BOOK
                 post {
 
                     val principal = call.principal<JWTPrincipal>()
@@ -193,10 +243,12 @@ fun Application.configureRouting() {
                         ?.asInt()
 
                     if (userId == null) {
+
                         call.respond(
                             HttpStatusCode.Unauthorized,
                             "Usuário não autenticado"
                         )
+
                         return@post
                     }
 
@@ -213,34 +265,112 @@ fun Application.configureRouting() {
                     )
                 }
 
-                get("/{id}") {
+                // UPDATE BOOK
+                put("/{id}") {
 
                     val id = call.parameters["id"]?.toIntOrNull()
 
                     if (id == null) {
+
                         call.respond(
                             HttpStatusCode.BadRequest,
                             "ID inválido"
                         )
-                        return@get
+
+                        return@put
                     }
 
-                    val book = bookService.findById(id)
+                    val principal = call.principal<JWTPrincipal>()
+
+                    val userId = principal
+                        ?.payload
+                        ?.getClaim("userId")
+                        ?.asInt()
+
+                    if (userId == null) {
+
+                        call.respond(
+                            HttpStatusCode.Unauthorized,
+                            "Usuário não autenticado"
+                        )
+
+                        return@put
+                    }
+
+                    val request = call.receive<BookCreateRequest>()
+
+                    val book = bookService.update(
+                        id = id,
+                        userId = userId,
+                        request = request
+                    )
 
                     if (book == null) {
+
                         call.respond(
-                            HttpStatusCode.NotFound,
-                            "Livro não encontrado"
+                            HttpStatusCode.Forbidden,
+                            "Você não pode editar este livro"
                         )
-                        return@get
+
+                        return@put
                     }
 
                     call.respond(book)
                 }
+
+                // DELETE BOOK
+                delete("/{id}") {
+
+                    val id = call.parameters["id"]?.toIntOrNull()
+
+                    if (id == null) {
+
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            "ID inválido"
+                        )
+
+                        return@delete
+                    }
+
+                    val principal = call.principal<JWTPrincipal>()
+
+                    val userId = principal
+                        ?.payload
+                        ?.getClaim("userId")
+                        ?.asInt()
+
+                    if (userId == null) {
+
+                        call.respond(
+                            HttpStatusCode.Unauthorized,
+                            "Usuário não autenticado"
+                        )
+
+                        return@delete
+                    }
+
+                    val deleted = bookService.delete(
+                        id = id,
+                        userId = userId
+                    )
+
+                    if (!deleted) {
+
+                        call.respond(
+                            HttpStatusCode.Forbidden,
+                            "Você não pode excluir este livro"
+                        )
+
+                        return@delete
+                    }
+
+                    call.respond(HttpStatusCode.NoContent)
+                }
             }
         }
 
-
+        // PUBLIC USER REGISTRATION
         post("/users") {
 
             val request = call.receive<UserCreateRequest>()
